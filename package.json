@@ -1,0 +1,8 @@
+{
+  "name": "healthtrust-poi",
+  "dependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "@openzeppelin/contracts": "^5.0.0",
+    "hardhat": "^2.19.1"
+  }
+}

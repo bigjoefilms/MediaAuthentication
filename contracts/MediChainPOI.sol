@@ -73,6 +73,8 @@ contract MediChainPOI is AccessControl, Ownable {
      */
     IProofOfIdentity private _proofOfIdentity;
 
+    bytes32 public constant DOCTOR_ROLE = keccak256("DOCTOR_ROLE");
+
     /* EVENTS
     ==================================================*/
     /**
@@ -104,6 +106,7 @@ contract MediChainPOI is AccessControl, Ownable {
      * @notice Emits the Medical Report Requested that made by patient.
      * @param reportId The report ID.
      * @param patientAddress The address of patient.
+     * @param amount The doctor per session price.
      */
     event MedicalReportRequested(
         uint256 indexed reportId,
@@ -231,23 +234,6 @@ contract MediChainPOI is AccessControl, Ownable {
 
     /* MODIFIERS
     ==================================================*/
-    // Modifier to restrict functions to only doctors
-    modifier onlyDoctor() {
-        require(
-            doctors[msg.sender].doctorAddress != address(0),
-            "Only doctors can perform this action"
-        );
-        _;
-    }
-
-    // Modifier to restrict functions to only admins
-    modifier onlyAdmin() {
-        require(
-            admins[msg.sender].adminAddress != address(0),
-            "Only admins can perform this action"
-        );
-        _;
-    }
     /**
      * @dev Modifier to be used on any functions that require a user be
      * permissioned per this contract's definition.
@@ -280,17 +266,15 @@ contract MediChainPOI is AccessControl, Ownable {
     /* Constructor
     ========================================*/
     /**
-     * @param admin The address of the admin.
      * @param proofOfIdentity_ The address of the Proof of Identity contract.
      * @param competencyRatingThreshold_ The competency rating threshold that
      * be met.
      */
     constructor(
-        address admin,
         address proofOfIdentity_,
         uint256 competencyRatingThreshold_
     ) Ownable(msg.sender) {
-        _grantRole(DEFAULT_ADMIN_ROLE, admin);
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         setPOIAddress(proofOfIdentity_);
         setCompetencyRatingThreshold(competencyRatingThreshold_);
     }
@@ -321,7 +305,7 @@ contract MediChainPOI is AccessControl, Ownable {
         uint256 _perSession,
         string memory _timeAvailability,
         string memory _rating
-    ) external onlyOwner onlyPermissioned(msg.sender) {
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) onlyPermissioned(msg.sender) {
         // ensure the account has a Proof of Identity NFT
         if (doctors[_doctorAddress].doctorAddress != address(0))
             revert MediChainPOI__DoctorAlreadyExists();
@@ -352,7 +336,7 @@ contract MediChainPOI is AccessControl, Ownable {
 
     function removeDoctor(
         address _doctorAddress
-    ) external onlyOwner onlyPermissioned(msg.sender) {
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) onlyPermissioned(msg.sender) {
         if (doctors[_doctorAddress].doctorAddress == address(0))
             revert MediChainPOI__DoctorNotFounded();
 
@@ -383,7 +367,7 @@ contract MediChainPOI is AccessControl, Ownable {
 
     function addAdmin(
         address _adminAddress
-    ) external onlyOwner onlyPermissioned(msg.sender) {
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) onlyPermissioned(msg.sender) {
         if (admins[_adminAddress].adminAddress != address(0))
             revert MediChainPOI__AdminAlreadyExists();
         admins[_adminAddress] = Admin(_adminAddress);
@@ -407,7 +391,7 @@ contract MediChainPOI is AccessControl, Ownable {
 
     function removeAdmin(
         address _adminAddress
-    ) external onlyOwner onlyPermissioned(msg.sender) {
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) onlyPermissioned(msg.sender) {
         if (admins[_adminAddress].adminAddress == address(0))
             revert MediChainPOI__AdminNotFounded();
 
@@ -504,7 +488,7 @@ contract MediChainPOI is AccessControl, Ownable {
     function submitMedicalReport(
         uint256 _reportId,
         string memory _summary
-    ) public onlyDoctor onlyPermissioned(msg.sender) {
+    ) public onlyRole(DOCTOR_ROLE) onlyPermissioned(msg.sender) {
         MedicalReport storage report = medicalReports[_reportId];
 
         if (report.reportId != _reportId)
@@ -535,7 +519,12 @@ contract MediChainPOI is AccessControl, Ownable {
      */
     function withdraw(
         uint256 _reportID
-    ) external onlyDoctor onlyPermissioned(msg.sender) returns (bool) {
+    )
+        external
+        onlyRole(DOCTOR_ROLE)
+        onlyPermissioned(msg.sender)
+        returns (bool)
+    {
         if (medicalReports[_reportID].doctorAddress != msg.sender)
             revert MediChainPOI__OnlyDoctorCanWithdraw();
 

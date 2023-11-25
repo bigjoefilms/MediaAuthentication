@@ -2,7 +2,7 @@
 
 ## Overview
 
-MediChainPOI is an example implementation utilizing the Proof of Identity contract to manage permissioned access to specific features within a healthcare blockchain system. This contract is designed to ensure that only users (Admins, Doctors, and Patients) with established and sufficiently high competency ratings can access certain functionalities.
+MediChainPOI is an implementation utilizing the Proof of Identity contract to manage permissioned access to specific features within a healthcare blockchain system. This contract is designed to ensure that only users (Admins, Doctors, and Patients) with established and sufficiently high competency ratings can access certain functionalities.
 
 ## Functionality and Roles
 

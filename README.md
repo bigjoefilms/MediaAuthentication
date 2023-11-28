@@ -1,4 +1,4 @@
-# MediChainPOI (Proof of Identity)
+## MediaAuthentication (Proof of Identity)
 
 ## Overview
 
